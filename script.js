@@ -1,543 +1,560 @@
-// Aguardar o carregamento completo do DOM
-document.addEventListener('DOMContentLoaded', function() {
-    // Elementos principais
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const toggleRegister = document.getElementById('toggleRegister');
-    const backToLogin = document.getElementById('backToLogin');
-    const passwordInput = document.getElementById('password');
-    const registerPasswordInput = document.getElementById('registerPassword');
-    const strengthBar = document.querySelector('.strength-bar');
-    const strengthValue = document.getElementById('strengthValue');
-    const toast = document.getElementById('toast');
-    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-    const brandPanel = document.querySelector('.brand-panel');
+// script.js - Sistema de Login Local com JSON
+
+// ===== DADOS DOS PROFESSORES (JSON) =====
+const professores = [
+    {
+        nome: "Amanda Lais Lins Praxedes",
+        cpf: "09622371400",
+        dataNascimento: "20/02/2005",
+        dataSemBarras: "20022005"
+    },
+    {
+        nome: "Ana Victória Moreira Alves da Silva",
+        cpf: "06991927570",
+        dataNascimento: "08/03/2006",
+        dataSemBarras: "08032006"
+    },
+    {
+        nome: "Pâmela Abigail da Silva Melo",
+        cpf: "09049132448", // Corrigido para 11 dígitos
+        dataNascimento: "24/11/2000",
+        dataSemBarras: "24112000"
+    },
+    {
+        nome: "Anna Letícya Medeiros Cavalcanti Cabral",
+        cpf: "14116866407",
+        dataNascimento: "29/01/2005",
+        dataSemBarras: "29012005"
+    },
+    {
+        nome: "Auana Raiana da Silva Andrade",
+        cpf: "11819143457",
+        dataNascimento: "18/06/2002",
+        dataSemBarras: "18062002"
+    },
+    {
+        nome: "Emily Cinthia de Oliveira",
+        cpf: "13434558470",
+        dataNascimento: "29/11/2001",
+        dataSemBarras: "29112001"
+    },
+    {
+        nome: "Erica Maria Carvalho de Oliveira",
+        cpf: "12318293465",
+        dataNascimento: "06/01/1999",
+        dataSemBarras: "06011999"
+    },
+    {
+        nome: "Erika Araujo Vieira",
+        cpf: "06567790474",
+        dataNascimento: "02/12/2002",
+        dataSemBarras: "02122002"
+    },
+    {
+        nome: "Evelyn Maria da Silva Alves",
+        cpf: "11107722462",
+        dataNascimento: "22/12/2005",
+        dataSemBarras: "22122005"
+    },
+    {
+        nome: "Gabriel Londres Arlota",
+        cpf: "10609155709",
+        dataNascimento: "11/02/1993",
+        dataSemBarras: "11021993"
+    },
+    {
+        nome: "Isabella de Oliveira Jorge Ferreira",
+        cpf: "11443153443",
+        dataNascimento: "19/01/1999",
+        dataSemBarras: "19011999"
+    },
+    {
+        nome: "Jaciara Maria Pereira da Silva",
+        cpf: "13525783442",
+        dataNascimento: "13/07/2002",
+        dataSemBarras: "13072002"
+    },
+    {
+        nome: "João Daniel Simões dos Santos Silva",
+        cpf: "12339995400",
+        dataNascimento: "10/06/2005",
+        dataSemBarras: "10062005"
+    },
+    {
+        nome: "José Aragão de Lima Junior",
+        cpf: "07689447406", // Corrigido para 11 dígitos
+        dataNascimento: "07/07/2025",
+        dataSemBarras: "07072025"
+    },
+    {
+        nome: "José Wellington da Silva Correia",
+        cpf: "09090485414",
+        dataNascimento: "14/07/1992",
+        dataSemBarras: "14071992"
+    },
+    {
+        nome: "Kamilla Melo Da Silva",
+        cpf: "06501392403",
+        dataNascimento: "20/02/2003",
+        dataSemBarras: "20022003"
+    },
+    {
+        nome: "Kariny Melo da Silva",
+        cpf: "12018328450",
+        dataNascimento: "09/03/2004",
+        dataSemBarras: "09032004"
+    },
+    {
+        nome: "Louis Filipe Lima Mota",
+        cpf: "09127773469",
+        dataNascimento: "01/08/2005",
+        dataSemBarras: "01082005"
+    },
+    {
+        nome: "Lucas Gabriel Santos Lima",
+        cpf: "10186129475",
+        dataNascimento: "17/01/2001",
+        dataSemBarras: "17012001"
+    },
+    {
+        nome: "Marcos Lucas da Silva Oliveira",
+        cpf: "07167714461", // Corrigido para 11 dígitos
+        dataNascimento: "15/11/1996",
+        dataSemBarras: "15111996"
+    },
+    {
+        nome: "Maria Eduarda dos Santos Rodrigues de Melo",
+        cpf: "13907652452",
+        dataNascimento: "04/03/2005",
+        dataSemBarras: "04032005"
+    },
+    {
+        nome: "Noemi de Castro Torres",
+        cpf: "09948169441",
+        dataNascimento: "25/05/1996",
+        dataSemBarras: "25051996"
+    },
+    {
+        nome: "Pablo Vitor da Silva Nascimento",
+        cpf: "13236789484",
+        dataNascimento: "17/05/2003",
+        dataSemBarras: "17052003"
+    },
+    {
+        nome: "Pedro Joaquim de Omena Neto",
+        cpf: "13749016445",
+        dataNascimento: "16/05/2000",
+        dataSemBarras: "16052000"
+    },
+    {
+        nome: "Pedro Victor Mendonça Uchôa",
+        cpf: "09370869409",
+        dataNascimento: "29/07/1997",
+        dataSemBarras: "29071997"
+    },
+    {
+        nome: "Rubens Patrick Barros Oliveira",
+        cpf: "12071361407",
+        dataNascimento: "04/06/2005",
+        dataSemBarras: "04062005"
+    },
+    {
+        nome: "Thuane Ingred Azevedo Barbosa",
+        cpf: "11221284444",
+        dataNascimento: "04/09/1997",
+        dataSemBarras: "04091997"
+    },
+    {
+        nome: "Willian Pereira dos Santos",
+        cpf: "08330987485",
+        dataNascimento: "17/01/1992",
+        dataSemBarras: "17011992"
+    },
+    {
+        nome: "Reigileide Vieira Ferraz",
+        cpf: "05423574536",
+        dataNascimento: "23/10/1996",
+        dataSemBarras: "23101996"
+    }
+];
+
+// ===== ESTADO DA APLICAÇÃO =====
+const AppState = {
+    debugMode: false,
+    logs: []
+};
+
+// ===== ELEMENTOS DOM =====
+const DOM = {
+    // Formulário
+    loginForm: document.getElementById('loginForm'),
     
-    // Estado da aplicação
-    const state = {
-        isRegisterVisible: false,
-        passwordVisible: false,
-        registerPasswordVisible: false
+    // Inputs
+    cpfInput: document.getElementById('cpf'),
+    senhaInput: document.getElementById('senha'),
+    
+    // Resultado
+    resultContainer: document.getElementById('resultContainer'),
+    resultIcon: document.getElementById('resultIcon'),
+    resultTitle: document.getElementById('resultTitle'),
+    resultText: document.getElementById('resultText'),
+    
+    // Debug
+    debugPanel: document.querySelector('.debug-panel'),
+    logContainer: document.getElementById('logContainer'),
+    debugToggle: document.getElementById('debugToggle'),
+    reloadBtn: document.getElementById('reloadBtn'),
+    ajudaLink: document.getElementById('ajudaLink'),
+    
+    // Stats
+    totalProfessores: document.getElementById('totalProfessores')
+};
+
+// ===== INICIALIZAÇÃO =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Sistema de Login Local iniciado');
+    
+    // Atualizar contador de professores
+    if (DOM.totalProfessores) {
+        DOM.totalProfessores.textContent = professores.length;
+    }
+    
+    // Configurar event listeners
+    setupEventListeners();
+    
+    // Carregar dados salvos
+    loadSavedData();
+    
+    // Adicionar log inicial
+    addLog('Sistema iniciado com sucesso');
+    addLog(`Total de professores: ${professores.length}`);
+});
+
+// ===== EVENT LISTENERS =====
+function setupEventListeners() {
+    // Formulário de login
+    if (DOM.loginForm) {
+        DOM.loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleLogin();
+        });
+    }
+    
+    // Máscara para CPF (apenas números)
+    if (DOM.cpfInput) {
+        DOM.cpfInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.substring(0, 11);
+            e.target.value = value;
+        });
+    }
+    
+    // Máscara para senha (apenas números)
+    if (DOM.senhaInput) {
+        DOM.senhaInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 8) value = value.substring(0, 8);
+            e.target.value = value;
+        });
+    }
+    
+    // Debug toggle
+    if (DOM.debugToggle) {
+        DOM.debugToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleDebug();
+        });
+    }
+    
+    // Recarregar
+    if (DOM.reloadBtn) {
+        DOM.reloadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            location.reload();
+        });
+    }
+    
+    // Ajuda
+    if (DOM.ajudaLink) {
+        DOM.ajudaLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showHelp();
+        });
+    }
+}
+
+// ===== FUNÇÃO PRINCIPAL: LOGIN =====
+function handleLogin() {
+    // Limpar resultado anterior
+    hideResult();
+    
+    // Obter valores
+    const cpf = DOM.cpfInput.value.trim();
+    const senha = DOM.senhaInput.value.trim();
+    
+    // Validar
+    if (!validateInput(cpf, senha)) {
+        return;
+    }
+    
+    // Buscar professor
+    const professor = buscarProfessor(cpf, senha);
+    
+    // Adicionar log
+    addLog(`Tentativa de login - CPF: ${cpf}, Senha: ${senha}`);
+    
+    if (professor) {
+        // Login bem-sucedido
+        addLog(`✅ Login bem-sucedido: ${professor.nome}`);
+        showSuccess(professor);
+        
+        // Salvar dados se "lembrar" estiver marcado
+        if (document.getElementById('lembrar').checked) {
+            saveUserData(cpf, senha);
+        }
+    } else {
+        // Login falhou
+        addLog('❌ Login falhou - Credenciais incorretas');
+        showError();
+    }
+}
+
+// ===== VALIDAÇÃO =====
+function validateInput(cpf, senha) {
+    let isValid = true;
+    
+    // Limpar erros
+    clearErrors();
+    
+    // Validar CPF
+    if (!cpf) {
+        showError('cpfError', 'CPF é obrigatório');
+        isValid = false;
+    } else if (cpf.length !== 11) {
+        showError('cpfError', 'CPF deve ter exatamente 11 dígitos');
+        isValid = false;
+    } else if (!/^\d+$/.test(cpf)) {
+        showError('cpfError', 'CPF deve conter apenas números');
+        isValid = false;
+    }
+    
+    // Validar senha
+    if (!senha) {
+        showError('senhaError', 'Data de nascimento é obrigatória');
+        isValid = false;
+    } else if (senha.length !== 8) {
+        showError('senhaError', 'Data deve ter 8 dígitos (DDMMAAAA)');
+        isValid = false;
+    } else if (!/^\d+$/.test(senha)) {
+        showError('senhaError', 'Data deve conter apenas números');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function showError(elementId, message) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = message;
+    }
+}
+
+function clearErrors() {
+    const errorElements = document.querySelectorAll('.error-message');
+    errorElements.forEach(el => el.textContent = '');
+}
+
+// ===== BUSCAR PROFESSOR =====
+function buscarProfessor(cpf, senha) {
+    // Formatar CPF (garantir zeros à esquerda)
+    const cpfFormatado = cpf.padStart(11, '0');
+    
+    // Buscar professor com CPF correspondente
+    return professores.find(professor => {
+        const professorCpf = professor.cpf.padStart(11, '0');
+        const professorSenha = professor.dataSemBarras;
+        
+        return professorCpf === cpfFormatado && professorSenha === senha;
+    });
+}
+
+// ===== MOSTRAR RESULTADOS =====
+function showSuccess(professor) {
+    // Salvar dados do professor logado
+    localStorage.setItem('professorLogado', JSON.stringify(professor));
+    
+    // Redirecionar para área do professor
+    setTimeout(() => {
+        window.location.href = 'areaProfessor/professores.html';
+    }, 500);
+}
+
+function showError() {
+    if (!DOM.resultContainer) return;
+    
+    // Atualizar ícone e cores
+    DOM.resultIcon.className = 'fas fa-times-circle';
+    DOM.resultContainer.style.borderColor = '#EF4444';
+    DOM.resultIcon.style.color = '#EF4444';
+    
+    // Atualizar texto
+    DOM.resultTitle.textContent = 'Login Falhou';
+    DOM.resultText.textContent = 'CPF ou data de nascimento incorretos. Verifique os dados e tente novamente.';
+    
+    // Mostrar resultado
+    DOM.resultContainer.classList.remove('hidden');
+    
+    // Limpar campo de senha
+    DOM.senhaInput.value = '';
+    DOM.senhaInput.focus();
+}
+
+function hideResult() {
+    if (DOM.resultContainer) {
+        DOM.resultContainer.classList.add('hidden');
+    }
+}
+
+// ===== FUNÇÕES UTILITÁRIAS =====
+function formatCPF(cpf) {
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function saveUserData(cpf, senha) {
+    const userData = {
+        cpf: cpf,
+        senha: senha,
+        timestamp: Date.now()
     };
     
-    // Inicialização
-    init();
-    
-    function init() {
-        // Configurar event listeners
-        setupEventListeners();
+    localStorage.setItem('masterEduUser', JSON.stringify(userData));
+    addLog('Dados do usuário salvos localmente');
+}
+
+function loadSavedData() {
+    try {
+        const savedData = localStorage.getItem('masterEduUser');
         
-        // Configurar validação de formulários
-        setupFormValidation();
-        
-        // Restaurar estado do formulário se existir
-        restoreFormState();
-    }
-    
-    function setupEventListeners() {
-        // Alternar entre login e cadastro
-        if (toggleRegister) {
-            toggleRegister.addEventListener('click', function(e) {
-                e.preventDefault();
-                showRegisterForm();
-            });
-        }
-        
-        if (backToLogin) {
-            backToLogin.addEventListener('click', function(e) {
-                e.preventDefault();
-                showLoginForm();
-            });
-        }
-        
-        // Alternar visibilidade da senha
-        const togglePasswordButtons = document.querySelectorAll('.toggle-password');
-        togglePasswordButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const input = this.parentElement.querySelector('input');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    this.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                    this.setAttribute('aria-label', 'Ocultar senha');
-                } else {
-                    input.type = 'password';
-                    this.innerHTML = '<i class="fas fa-eye"></i>';
-                    this.setAttribute('aria-label', 'Mostrar senha');
-                }
-            });
-        });
-        
-        // Validar força da senha em tempo real
-        if (registerPasswordInput) {
-            registerPasswordInput.addEventListener('input', function() {
-                const password = this.value;
-                const strength = calculatePasswordStrength(password);
-                updatePasswordStrengthIndicator(strength);
-            });
-        }
-        
-        // Seleção de função (aluno/professor)
-        const roleOptions = document.querySelectorAll('.role-option');
-        roleOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                // Remover classe active de todas as opções
-                roleOptions.forEach(opt => opt.classList.remove('active'));
-                
-                // Adicionar classe active à opção clicada
-                this.classList.add('active');
-                
-                // Armazenar seleção
-                const role = this.dataset.role;
-                localStorage.setItem('selectedRole', role);
-            });
-        });
-        
-        // Menu mobile
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-        }
-        
-        // Fechar menu ao clicar fora
-        document.addEventListener('click', function(e) {
-            if (brandPanel && brandPanel.style.display === 'block' && 
-                !brandPanel.contains(e.target) && 
-                !mobileMenuToggle.contains(e.target)) {
-                brandPanel.style.display = 'none';
-            }
-        });
-    }
-    
-    function setupFormValidation() {
-        // Validação do formulário de login
-        if (loginForm) {
-            loginForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Coletar dados do formulário
-                const formData = new FormData(this);
-                const username = formData.get('username');
-                const password = formData.get('password');
-                const remember = formData.get('remember') === 'on';
-                
-                // Validar campos
-                let isValid = true;
-                
-                if (!username.trim()) {
-                    showInputError('username', 'Por favor, insira seu usuário ou e-mail');
-                    isValid = false;
-                } else {
-                    clearInputError('username');
-                }
-                
-                if (!password) {
-                    showInputError('password', 'Por favor, insira sua senha');
-                    isValid = false;
-                } else {
-                    clearInputError('password');
-                }
-                
-                if (!isValid) {
-                    showToast('Por favor, corrija os erros no formulário', 'error');
-                    return;
-                }
-                
-                // Simular envio de formulário
-                simulateLogin(username, password, remember);
-            });
-        }
-        
-        // Validação do formulário de cadastro
-        if (registerForm) {
-            registerForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Coletar dados do formulário
-                const formData = new FormData(this);
-                const name = formData.get('registerName');
-                const email = formData.get('registerEmail');
-                const password = formData.get('registerPassword');
-                const terms = formData.get('terms') === 'on';
-                
-                // Validar campos
-                let isValid = true;
-                
-                if (!name.trim()) {
-                    showInputError('registerName', 'Por favor, insira seu nome completo');
-                    isValid = false;
-                } else {
-                    clearInputError('registerName');
-                }
-                
-                if (!email.trim()) {
-                    showInputError('registerEmail', 'Por favor, insira seu e-mail');
-                    isValid = false;
-                } else if (!isValidEmail(email)) {
-                    showInputError('registerEmail', 'Por favor, insira um e-mail válido');
-                    isValid = false;
-                } else {
-                    clearInputError('registerEmail');
-                }
-                
-                if (!password) {
-                    showInputError('registerPassword', 'Por favor, crie uma senha');
-                    isValid = false;
-                } else if (password.length < 8) {
-                    showInputError('registerPassword', 'A senha deve ter pelo menos 8 caracteres');
-                    isValid = false;
-                } else {
-                    clearInputError('registerPassword');
-                }
-                
-                if (!terms) {
-                    showToast('Você precisa aceitar os termos de serviço', 'error');
-                    isValid = false;
-                }
-                
-                if (!isValid) {
-                    return;
-                }
-                
-                // Simular cadastro
-                simulateRegistration(name, email, password);
-            });
-        }
-        
-        // Validação em tempo real
-        const inputs = document.querySelectorAll('input[required]');
-        inputs.forEach(input => {
-            input.addEventListener('blur', function() {
-                validateField(this);
-            });
-        });
-    }
-    
-    function validateField(field) {
-        const value = field.value.trim();
-        const fieldId = field.id;
-        
-        switch(fieldId) {
-            case 'username':
-                if (!value) {
-                    showInputError(fieldId, 'Usuário ou e-mail é obrigatório');
-                } else {
-                    clearInputError(fieldId);
-                }
-                break;
-                
-            case 'password':
-                if (!value) {
-                    showInputError(fieldId, 'Senha é obrigatória');
-                } else {
-                    clearInputError(fieldId);
-                }
-                break;
-                
-            case 'registerName':
-                if (!value) {
-                    showInputError(fieldId, 'Nome completo é obrigatório');
-                } else if (value.length < 3) {
-                    showInputError(fieldId, 'Nome deve ter pelo menos 3 caracteres');
-                } else {
-                    clearInputError(fieldId);
-                }
-                break;
-                
-            case 'registerEmail':
-                if (!value) {
-                    showInputError(fieldId, 'E-mail é obrigatório');
-                } else if (!isValidEmail(value)) {
-                    showInputError(fieldId, 'Por favor, insira um e-mail válido');
-                } else {
-                    clearInputError(fieldId);
-                }
-                break;
-                
-            case 'registerPassword':
-                if (!value) {
-                    showInputError(fieldId, 'Senha é obrigatória');
-                } else if (value.length < 8) {
-                    showInputError(fieldId, 'Senha deve ter pelo menos 8 caracteres');
-                } else {
-                    clearInputError(fieldId);
-                }
-                break;
-        }
-    }
-    
-    function showInputError(fieldId, message) {
-        const inputGroup = document.getElementById(fieldId).closest('.input-group');
-        const feedback = inputGroup.querySelector('.input-feedback');
-        
-        inputGroup.classList.add('invalid');
-        inputGroup.classList.remove('valid');
-        feedback.textContent = message;
-    }
-    
-    function clearInputError(fieldId) {
-        const inputGroup = document.getElementById(fieldId).closest('.input-group');
-        const feedback = inputGroup.querySelector('.input-feedback');
-        
-        inputGroup.classList.remove('invalid');
-        inputGroup.classList.remove('valid');
-        feedback.textContent = '';
-    }
-    
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-    
-    function calculatePasswordStrength(password) {
-        let strength = 0;
-        
-        // Comprimento mínimo
-        if (password.length >= 8) strength += 1;
-        if (password.length >= 12) strength += 1;
-        
-        // Diversidade de caracteres
-        if (/[a-z]/.test(password)) strength += 1;
-        if (/[A-Z]/.test(password)) strength += 1;
-        if (/[0-9]/.test(password)) strength += 1;
-        if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-        
-        return Math.min(strength, 5); // Máximo de 5
-    }
-    
-    function updatePasswordStrengthIndicator(strength) {
-        let percentage = (strength / 5) * 100;
-        let strengthText = 'fraca';
-        let color = '#EF4444'; // Vermelho
-        
-        if (strength >= 4) {
-            strengthText = 'forte';
-            color = '#10B981'; // Verde
-        } else if (strength >= 2) {
-            strengthText = 'média';
-            color = '#F59E0B'; // Amarelo
-        }
-        
-        // Atualizar barra
-        strengthBar.style.width = `${percentage}%`;
-        strengthBar.style.backgroundColor = color;
-        
-        // Atualizar texto
-        strengthValue.textContent = strengthText;
-        strengthValue.style.color = color;
-    }
-    
-    function showRegisterForm() {
-        loginForm.classList.add('hidden');
-        registerForm.classList.remove('hidden');
-        state.isRegisterVisible = true;
-        
-        // Focar no primeiro campo
-        const firstInput = registerForm.querySelector('input');
-        if (firstInput) {
-            firstInput.focus();
-        }
-        
-        // Atualizar URL (sem recarregar a página)
-        history.pushState({ form: 'register' }, '', '#register');
-        
-        showToast('Formulário de cadastro ativado', 'info');
-    }
-    
-    function showLoginForm() {
-        registerForm.classList.add('hidden');
-        loginForm.classList.remove('hidden');
-        state.isRegisterVisible = false;
-        
-        // Focar no primeiro campo
-        const firstInput = loginForm.querySelector('input');
-        if (firstInput) {
-            firstInput.focus();
-        }
-        
-        // Atualizar URL (sem recarregar a página)
-        history.pushState({ form: 'login' }, '', '#login');
-        
-        showToast('Formulário de login ativado', 'info');
-    }
-    
-    function simulateLogin(username, password, remember) {
-        // Mostrar estado de carregamento
-        const submitButton = loginForm.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Autenticando...';
-        submitButton.disabled = true;
-        
-        // Simular atraso de rede
-        setTimeout(() => {
-            // Credenciais de exemplo para demonstração
-            const validCredentials = (
-                (username === 'admin@masteredu.com' && password === 'Admin123!') ||
-                (username === 'professor' && password === 'Professor123!') ||
-                (username === 'aluno' && password === 'Aluno123!') ||
-                (username === 'demo' && password === 'Demo123!')
-            );
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            const cacheAge = Date.now() - data.timestamp;
+            const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dias
             
-            if (validCredentials) {
-                // Salvar credenciais se "lembrar-me" estiver marcado
-                if (remember) {
-                    localStorage.setItem('rememberedUser', username);
-                } else {
-                    localStorage.removeItem('rememberedUser');
-                }
+            if (cacheAge < maxAge) {
+                if (DOM.cpfInput) DOM.cpfInput.value = data.cpf;
+                if (DOM.senhaInput) DOM.senhaInput.value = data.senha;
+                document.getElementById('lembrar').checked = true;
                 
-                // Mostrar mensagem de sucesso
-                showToast('Login realizado com sucesso! Redirecionando...', 'success');
-                
-                // Simular redirecionamento
-                setTimeout(() => {
-                    // Em um sistema real, aqui você redirecionaria para o dashboard
-                    // window.location.href = '/dashboard';
-                    showToast('Redirecionamento simulado. Em produção, você seria direcionado ao painel.', 'success');
-                    
-                    // Restaurar botão
-                    submitButton.innerHTML = originalText;
-                    submitButton.disabled = false;
-                }, 2000);
+                addLog('Dados do usuário carregados do cache');
+                return true;
             } else {
-                // Mostrar erro
-                showToast('Credenciais inválidas. Tente novamente.', 'error');
-                
-                // Restaurar botão
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-            }
-        }, 1500);
-    }
-    
-    function simulateRegistration(name, email, password) {
-        // Mostrar estado de carregamento
-        const submitButton = registerForm.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando conta...';
-        submitButton.disabled = true;
-        
-        // Simular atraso de rede
-        setTimeout(() => {
-            // Verificar se o e-mail já está em uso (simulação)
-            const existingUsers = JSON.parse(localStorage.getItem('masterEduUsers') || '[]');
-            const userExists = existingUsers.some(user => user.email === email);
-            
-            if (userExists) {
-                showToast('Este e-mail já está em uso. Tente fazer login.', 'error');
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-                return;
-            }
-            
-            // Salvar novo usuário (em um sistema real, isso seria feito no servidor)
-            const newUser = {
-                name,
-                email,
-                password: '***' // Nunca armazene senhas em texto claro no localStorage
-            };
-            
-            existingUsers.push(newUser);
-            localStorage.setItem('masterEduUsers', JSON.stringify(existingUsers));
-            
-            // Mostrar mensagem de sucesso
-            showToast('Conta criada com sucesso! Redirecionando para o login...', 'success');
-            
-            // Voltar para o formulário de login após um tempo
-            setTimeout(() => {
-                showLoginForm();
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-                
-                // Preencher automaticamente o campo de e-mail no login
-                const usernameInput = document.getElementById('username');
-                if (usernameInput) {
-                    usernameInput.value = email;
-                }
-            }, 2000);
-        }, 2000);
-    }
-    
-    function showToast(message, type = 'info') {
-        // Remover toast anterior
-        toast.classList.remove('show');
-        
-        // Configurar nova mensagem
-        toast.textContent = message;
-        
-        // Configurar cor baseada no tipo
-        toast.style.backgroundColor = getToastColor(type);
-        
-        // Mostrar toast
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 10);
-        
-        // Ocultar toast após 5 segundos
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 5000);
-    }
-    
-    function getToastColor(type) {
-        switch(type) {
-            case 'success': return '#10B981'; // Verde
-            case 'error': return '#EF4444'; // Vermelho
-            case 'warning': return '#F59E0B'; // Amarelo
-            default: return '#3B82F6'; // Azul (info)
-        }
-    }
-    
-    function restoreFormState() {
-        // Verificar se há um usuário lembrado
-        const rememberedUser = localStorage.getItem('rememberedUser');
-        if (rememberedUser) {
-            const usernameInput = document.getElementById('username');
-            const rememberCheckbox = document.getElementById('remember');
-            
-            if (usernameInput) {
-                usernameInput.value = rememberedUser;
-            }
-            
-            if (rememberCheckbox) {
-                rememberCheckbox.checked = true;
+                localStorage.removeItem('masterEduUser');
             }
         }
-        
-        // Verificar se há uma função selecionada
-        const selectedRole = localStorage.getItem('selectedRole');
-        if (selectedRole) {
-            const roleOption = document.querySelector(`.role-option[data-role="${selectedRole}"]`);
-            if (roleOption) {
-                document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('active'));
-                roleOption.classList.add('active');
-            }
-        }
-        
-        // Verificar hash da URL para determinar qual formulário mostrar
-        if (window.location.hash === '#register') {
-            showRegisterForm();
-        }
+    } catch (error) {
+        console.error('Erro ao carregar dados salvos:', error);
     }
     
-    function toggleMobileMenu() {
-        if (brandPanel.style.display === 'block') {
-            brandPanel.style.display = 'none';
+    return false;
+}
+
+// ===== DEBUG FUNCTIONS =====
+function toggleDebug() {
+    AppState.debugMode = !AppState.debugMode;
+    
+    if (DOM.debugPanel) {
+        if (AppState.debugMode) {
+            DOM.debugPanel.classList.remove('hidden');
+            DOM.debugToggle.textContent = 'Esconder Debug';
+            addLog('Modo debug ativado');
         } else {
-            brandPanel.style.display = 'block';
-            brandPanel.style.animation = 'slideIn 0.3s ease forwards';
+            DOM.debugPanel.classList.add('hidden');
+            DOM.debugToggle.textContent = 'Debug';
         }
     }
+}
+
+function addLog(message) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = {
+        time: timestamp,
+        message: message
+    };
     
-    // Tratar navegação pelo botão voltar/avançar do navegador
-    window.addEventListener('popstate', function(event) {
-        if (event.state && event.state.form === 'register') {
-            showRegisterForm();
-        } else {
-            showLoginForm();
-        }
+    AppState.logs.push(logEntry);
+    
+    // Limitar logs a 50 entradas
+    if (AppState.logs.length > 50) {
+        AppState.logs.shift();
+    }
+    
+    updateLogDisplay();
+}
+
+function updateLogDisplay() {
+    if (!DOM.logContainer || !AppState.debugMode) return;
+    
+    DOM.logContainer.innerHTML = '';
+    
+    AppState.logs.forEach(log => {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.textContent = `[${log.time}] ${log.message}`;
+        DOM.logContainer.appendChild(div);
     });
     
-    // Inicializar com base no hash da URL
-    if (window.location.hash === '#register') {
-        showRegisterForm();
+    // Rolagem automática para o final
+    DOM.logContainer.scrollTop = DOM.logContainer.scrollHeight;
+}
+
+function showHelp() {
+    const ajuda = `
+    <strong>Instruções de Uso:</strong><br>
+    1. Digite seu CPF completo (11 dígitos)<br>
+    2. Digite sua data de nascimento sem barras (DDMMAAAA)<br>
+    3. Clique em "Verificar Acesso"<br><br>
+    
+    <strong>Exemplos:</strong><br>
+    • Data 20/02/2005 = 20022005<br>
+    • Data 08/03/2006 = 08032006<br>
+    • Data 24/11/2000 = 24112000<br><br>
+    
+    <strong>Problemas comuns:</strong><br>
+    • CPF deve ter 11 dígitos (adicionar zeros à esquerda se necessário)<br>
+    • Data deve ter 8 dígitos (sem barras)<br>
+    • Use apenas números
+    `;
+    
+    alert(ajuda);
+}
+
+// ===== EXPORT PARA DEBUG =====
+window.MasterEdu = {
+    professores: professores,
+    buscarProfessor: buscarProfessor,
+    limparCache: function() {
+        localStorage.removeItem('masterEduUser');
+        addLog('Cache limpo');
+        alert('Cache limpo com sucesso!');
+    },
+    testarLogin: function(cpf, senha) {
+        DOM.cpfInput.value = cpf;
+        DOM.senhaInput.value = senha;
+        handleLogin();
+    },
+    mostrarTodos: function() {
+        console.table(professores.map(p => ({
+            Nome: p.nome,
+            CPF: p.cpf,
+            'Data com /': p.dataNascimento,
+            'Data sem /': p.dataSemBarras
+        })));
     }
-});
+};
+
+// Adicionar alguns logs iniciais
+setTimeout(() => {
+    addLog('Sistema pronto para uso');
+    addLog('Digite CPF e senha para testar');
+}, 100);

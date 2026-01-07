@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área Meu Prof | Master Edu</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="professores.css">
+    
+    <!-- Firebase v8 SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h1>Master<span>Edu</span></h1>
+            </div>
+            <h2 class="page-title">Área Meu Prof</h2>
+            <div class="user-menu">
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <div class="welcome-card">
+                <div class="welcome-header">
+                    <div class="welcome-text">
+                        <h2 id="professorNome">Bem vindo, Professor(a)</h2>
+                        <p class="last-access">Último acesso: <span id="lastAccess">Hoje às 10:30</span></p>
+                    </div>
+                    <div class="welcome-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+                
+                <!-- Financial Info -->
+                <div class="financial-info">
+                    <div class="financial-card">
+                        <div class="financial-header">
+                            <i class="fas fa-wallet"></i>
+                            <h3>Valor na carteira</h3>
+                        </div>
+                        <div class="financial-value" id="walletValue">R$ 1.250,00</div>
+                        <p class="financial-subtitle">Valor já garantido</p>
+                    </div>
+                    
+                    <div class="financial-card">
+                        <div class="financial-header">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h3>Valor previsto mês</h3>
+                        </div>
+                        <div class="financial-value secondary" id="monthValue">R$ 2.800,00</div>
+                        <p class="financial-subtitle">Total estimado</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Aulas Section -->
+        <section class="aulas-section">
+            <div class="section-header">
+                <h2>Lista de Aulas</h2>
+                <div class="date-filter">
+                    <i class="fas fa-calendar"></i>
+                    <input type="date" id="dateFilter" class="date-input">
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="todas">Todas as Aulas</button>
+                    <button class="tab" data-tab="hoje">Aulas de Hoje</button>
+                    <button class="tab" data-tab="futuras">Próximas Aulas</button>
+                    <button class="tab" data-tab="concluidas">Aulas Concluídas</button>
+                </div>
+                
+                <div class="tab-content active" id="todas">
+                    <div class="table-container">
+                        <table class="aulas-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Nome Cliente</th>
+                                    <th>Aluno</th>
+                                    <th>Hora</th>
+                                    <th>Duração</th>
+                                    <th>Aula concluída</th>
+                                    <th>Relatório da Aula</th>
+                                </tr>
+                            </thead>
+                            <tbody id="aulasTableBody">
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="hoje">
+                    <!-- Conteúdo será carregado via JavaScript -->
+                </div>
+                
+                <div class="tab-content" id="futuras">
+                    <!-- Conteúdo será carregado via JavaScript -->
+                </div>
+                
+                <div class="tab-content" id="concluidas">
+                    <!-- Conteúdo será carregado via JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-buttons">
+                <a href="#" class="footer-btn" id="comunicacaoBtn">
+                    <i class="fas fa-comments"></i>
+                    <span>Comunicação</span>
+                </a>
+                <a href="#" class="footer-btn" id="driveBtn">
+                    <i class="fas fa-folder"></i>
+                    <span>Drive</span>
+                </a>
+                <a href="#" class="footer-btn" id="indiqueBtn">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Indique um Professor</span>
+                </a>
+            </div>
+            
+            <div class="footer-info">
+                <p>Master Edu © 2023 - Sistema de Gestão de Professores</p>
+                <p class="version">Versão 2.0.1</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal de Confirmação de Aula -->
+    <div id="confirmAulaModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-body" style="text-align: center; padding: var(--space-xl);">
+                <i class="fas fa-question-circle" style="font-size: 3rem; color: var(--primary); margin-bottom: var(--space-md);"></i>
+                <h3 style="margin-bottom: var(--space-md);">Gostaria de mudar o status da aula?</h3>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button class="btn-secondary" id="confirmAulaNo">Não</button>
+                <button class="btn-primary" id="confirmAulaYes">Sim</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Relatório -->
+    <div id="relatorioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Relatório da Aula</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="relatorioConteudo">Conteúdo abordado:</label>
+                    <textarea id="relatorioConteudo" rows="4" placeholder="Descreva o conteúdo da aula..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="relatorioObservacoes">Observações:</label>
+                    <textarea id="relatorioObservacoes" rows="3" placeholder="Observações importantes..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary modal-cancel">Cancelar</button>
+                <button class="btn-primary modal-save">Salvar Relatório</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="../banco.js"></script>
+    <!-- Scripts -->
+    <script src="professores.js"></script>
+</body>
+</html>
