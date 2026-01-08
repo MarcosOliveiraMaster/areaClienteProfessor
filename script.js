@@ -381,8 +381,17 @@ function buscarProfessor(cpf, senha) {
 
 // ===== MOSTRAR RESULTADOS =====
 function showSuccess(professor) {
+    // Criar variável com o CPF do professor
+    const idProfessor_CPF = professor.cpf;
+    
+    // Imprimir no console
+    console.log('id-Professor_CPF:', idProfessor_CPF);
+    
     // Salvar dados do professor logado
     localStorage.setItem('professorLogado', JSON.stringify(professor));
+    
+    // Salvar idProfessor_CPF separadamente
+    localStorage.setItem('idProfessor_CPF', idProfessor_CPF);
     
     // Redirecionar para área do professor
     setTimeout(() => {

@@ -97,6 +97,7 @@ const dataBaseAulas = [
 // ===== ESTADO DA APLICAÇÃO =====
 const AppState = {
     professorLogado: null,
+    idProfessor_CPF: null, // Armazenar CPF do professor logado
     aulas: [...dataBaseAulas],
     aulaSelecionada: null,
     aulaPendenteSwitch: null,
@@ -176,6 +177,16 @@ function loadProfessorData(professorData) {
     try {
         const professor = JSON.parse(professorData);
         AppState.professorLogado = professor;
+        
+        // Recuperar idProfessor_CPF do localStorage
+        const idProfessor_CPF = localStorage.getItem('idProfessor_CPF');
+        
+        // Armazenar no AppState para uso durante toda a sessão
+        AppState.idProfessor_CPF = idProfessor_CPF;
+        
+        // Imprimir no console
+        console.log('id-Professor_CPF:', idProfessor_CPF);
+        console.log('Variável mantida em AppState.idProfessor_CPF:', AppState.idProfessor_CPF);
         
         // Buscar informações financeiras no banco de dados
         const professorBD = dataBaseProfessores.find(p => p.cpf === professor.cpf);
