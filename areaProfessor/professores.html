@@ -19,6 +19,7 @@
     <!-- Firebase v8 SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 </head>
@@ -93,8 +94,6 @@
                 <div class="tabs">
                     <button class="tab active" data-tab="todas">Todas as Aulas</button>
                     <button class="tab" data-tab="hoje">Aulas de Hoje</button>
-                    <button class="tab" data-tab="futuras">Próximas Aulas</button>
-                    <button class="tab" data-tab="concluidas">Aulas Concluídas</button>
                 </div>
                 
                 <div class="tab-content active" id="todas">
@@ -107,6 +106,8 @@
                                     <th>Aluno</th>
                                     <th>Hora</th>
                                     <th>Duração</th>
+                                    <th>Status Aula</th>
+                                    <th class="hidden-column">Código da Aula</th>
                                     <th>Aula concluída</th>
                                     <th>Relatório da Aula</th>
                                 </tr>
@@ -119,14 +120,6 @@
                 </div>
                 
                 <div class="tab-content" id="hoje">
-                    <!-- Conteúdo será carregado via JavaScript -->
-                </div>
-                
-                <div class="tab-content" id="futuras">
-                    <!-- Conteúdo será carregado via JavaScript -->
-                </div>
-                
-                <div class="tab-content" id="concluidas">
                     <!-- Conteúdo será carregado via JavaScript -->
                 </div>
             </div>

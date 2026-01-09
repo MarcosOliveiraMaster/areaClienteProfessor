@@ -17,13 +17,14 @@ const firebaseConfig = {
 // IMPORTANTE: Para usar o SDK modular, você precisa incluir os scripts do Firebase v9+ no HTML
 // Exemplo: <script type="module" src="banco.js"></script>
 
-let app, db, auth, analytics;
+let app, db, auth, analytics, firestore;
 
 try {
   // Compatibilidade com Firebase v8 (compat) - versão atual do código
   if (typeof firebase !== 'undefined' && firebase.app) {
     app = firebase.initializeApp(firebaseConfig);
     db = firebase.database();
+    firestore = firebase.firestore();
     auth = firebase.auth();
     
     // Analytics é opcional

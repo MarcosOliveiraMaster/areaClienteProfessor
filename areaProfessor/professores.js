@@ -19,80 +19,7 @@ const dataBaseProfessores = [
     // ... outros professores do seu banco de dados
 ];
 
-const dataBaseAulas = [
-    {
-        id: 1,
-        data: "15/11/2023",
-        nomeCliente: "Maria Silva",
-        aluno: "João Silva",
-        hora: "09:00",
-        duracao: "60 min",
-        status: "confirmada",
-        valor: 150.00,
-        check: false,
-        relatorio: false
-    },
-    {
-        id: 2,
-        data: "15/11/2023",
-        nomeCliente: "José Santos",
-        aluno: "Ana Santos",
-        hora: "11:00",
-        duracao: "90 min",
-        status: "pendente",
-        valor: 200.00,
-        check: false,
-        relatorio: false
-    },
-    {
-        id: 3,
-        data: "16/11/2023",
-        nomeCliente: "Carlos Oliveira",
-        aluno: "Pedro Oliveira",
-        hora: "14:00",
-        duracao: "60 min",
-        status: "concluida",
-        valor: 150.00,
-        check: true,
-        relatorio: true
-    },
-    {
-        id: 4,
-        data: "17/11/2023",
-        nomeCliente: "Patrícia Costa",
-        aluno: "Mariana Costa",
-        hora: "16:30",
-        duracao: "120 min",
-        status: "confirmada",
-        valor: 300.00,
-        check: false,
-        relatorio: false
-    },
-    {
-        id: 5,
-        data: "18/11/2023",
-        nomeCliente: "Roberto Alves",
-        aluno: "Lucas Alves",
-        hora: "10:00",
-        duracao: "60 min",
-        status: "pendente",
-        valor: 150.00,
-        check: false,
-        relatorio: false
-    },
-    {
-        id: 6,
-        data: "20/11/2023",
-        nomeCliente: "Fernanda Lima",
-        aluno: "Gabriela Lima",
-        hora: "15:00",
-        duracao: "90 min",
-        status: "cancelada",
-        valor: 200.00,
-        check: false,
-        relatorio: false
-    }
-];
+const dataBaseAulas = [];
 
 // ===== ESTADO DA APLICAÇÃO =====
 const AppState = {
@@ -206,8 +133,95 @@ function loadProfessorData(professorData) {
             // Caso não encontre no banco, usar dados do login
             DOM.professorNome.textContent = `Bem vindo, ${professor.nome}`;
         }
+        
+        // Buscar aulas do professor no Firestore
+        buscarAulasProfessor(idProfessor_CPF);
+        
     } catch (error) {
         console.error('Erro ao carregar dados do professor:', error);
+    }
+}
+
+// ===== BUSCAR AULAS DO PROFESSOR NO FIRESTORE =====
+async function buscarAulasProfessor(idProfessor_CPF) {
+    try {
+        if (!idProfessor_CPF) {
+            console.error('❌ idProfessor_CPF não encontrado');
+            return;
+        }
+        
+        // Verificar se o Firestore está disponível
+        if (typeof firebase === 'undefined' || !firebase.firestore) {
+            console.error('❌ Firestore não está disponível');
+            return;
+        }
+        
+        const firestore = firebase.firestore();
+        
+        console.log('🔍 Buscando aulas para o professor:', idProfessor_CPF);
+        
+        // Buscar documentos na coleção "BancoDeAulas-Lista" onde idProfessor = idProfessor_CPF
+        const snapshot = await firestore.collection('BancoDeAulas-Lista')
+            .where('idProfessor', '==', idProfessor_CPF)
+            .get();
+        
+        if (snapshot.empty) {
+            console.log('ℹ️ Nenhuma aula encontrada para este professor');
+            AppState.aulas = [];
+            loadAulas();
+            return;
+        }
+        
+        console.log('═══════════════════════════════════════════════════');
+        console.log('TabelaAulas');
+        console.log('═══════════════════════════════════════════════════');
+        
+        // Array para armazenar as aulas
+        const aulasArray = [];
+        
+        // Iterar sobre os documentos encontrados
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const docId = doc.id;
+            
+            // Criar uma string com todas as informações separadas por ";"
+            const campos = [];
+            campos.push(`ID_Documento: ${docId}`);
+            
+            // Adicionar todos os campos do documento
+            Object.keys(data).forEach(key => {
+                campos.push(`${key}: ${data[key]}`);
+            });
+            
+            // Exibir no console
+            console.log(campos.join(' ; '));
+            
+            // Adicionar aula ao array com estrutura para a tabela
+            aulasArray.push({
+                id: docId,
+                idAula: data['id-Aula'] || '',
+                data: data.data || '',
+                nomeCliente: data.nomeCliente || data.cliente || '',
+                aluno: data.estudante || '',
+                hora: data.horario || '',
+                duracao: data.duracao || '',
+                statusAula: data.StatusAula || '',
+                check: data.ConfirmacaoProfessorAula === true || data.ConfirmacaoProfessorAula === 'true',
+                relatorio: false // Deixar em branco por enquanto
+            });
+        });
+        
+        console.log('═══════════════════════════════════════════════════');
+        console.log(`✅ Total de aulas encontradas: ${snapshot.size}`);
+        
+        // Atualizar AppState com as aulas do Firestore
+        AppState.aulas = aulasArray;
+        
+        // Recarregar a tabela com os novos dados
+        loadAulas();
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar aulas do professor:', error);
     }
 }
 
@@ -371,15 +385,35 @@ function renderAulasTable(aulas) {
         const reportBtnText = aula.relatorio ? 'Ver' : 'Confirmar';
         const reportBtnClass = aula.relatorio ? 'btn-report' : 'btn-report';
         
+        // Exibir apenas primeiro e segundo nome do cliente
+        const nomeClienteAbreviado = aula.nomeCliente 
+            ? aula.nomeCliente.split(' ').slice(0, 2).join(' ') 
+            : '-';
+        
+        // Determinar classe CSS baseada no statusAula
+        let statusClass = '';
+        const statusAulaLower = (aula.statusAula || '').toLowerCase();
+        if (statusAulaLower.includes('concluída') || statusAulaLower.includes('concluida')) {
+            statusClass = 'status-concluida';
+        } else if (statusAulaLower.includes('reagendada')) {
+            statusClass = 'status-reagendada';
+        } else if (statusAulaLower.includes('cancelada')) {
+            statusClass = 'status-cancelada';
+        } else if (statusAulaLower.includes('reposição') || statusAulaLower.includes('reposicao')) {
+            statusClass = 'status-reposicao';
+        }
+        
         tr.innerHTML = `
-            <td>${aula.data}</td>
-            <td><strong>${aula.nomeCliente}</strong></td>
-            <td>${aula.aluno}</td>
-            <td>${aula.hora}</td>
-            <td>${aula.duracao}</td>
+            <td>${aula.data || '-'}</td>
+            <td><strong>${nomeClienteAbreviado}</strong></td>
+            <td>${aula.aluno || '-'}</td>
+            <td>${aula.hora || '-'}</td>
+            <td>${aula.duracao || '-'}</td>
+            <td><span class="status-badge ${statusClass}">${aula.statusAula || '-'}</span></td>
+            <td class="hidden-column">${aula.idAula || '-'}</td>
             <td>
                 <label class="switch">
-                    <input type="checkbox" ${aula.check ? 'checked' : ''} data-id="${aula.id}" data-action="toggle-concluida">
+                    <input type="checkbox" ${aula.check ? 'checked' : ''} data-id="${aula.id}" data-id-aula="${aula.idAula}" data-action="toggle-concluida">
                     <span class="slider"></span>
                 </label>
             </td>
@@ -404,14 +438,18 @@ function addTableEventListeners() {
     document.querySelectorAll('[data-action="toggle-concluida"]').forEach(checkbox => {
         checkbox.addEventListener('change', function(e) {
             e.preventDefault();
-            const aulaId = parseInt(this.dataset.id);
+            const aulaId = this.dataset.id;
+            const idAulaValor = this.dataset.idAula;
             const novoEstado = this.checked;
+            
+            console.log('🔍 Switch clicado - id-Aula:', idAulaValor);
+            console.log('📋 aulaId (docId):', aulaId);
             
             // Reverter o estado do checkbox temporariamente
             this.checked = !novoEstado;
             
             // Armazenar referência para confirmação
-            AppState.aulaPendenteSwitch = { aulaId, novoEstado, checkbox: this };
+            AppState.aulaPendenteSwitch = { aulaId, idAulaValor, novoEstado, checkbox: this };
             
             // Abrir modal de confirmação
             openConfirmAulaModal();
@@ -501,30 +539,71 @@ function closeConfirmAulaModal() {
     AppState.aulaPendenteSwitch = null;
 }
 
-function confirmAulaConcluida() {
+async function confirmAulaConcluida() {
     if (!AppState.aulaPendenteSwitch) {
         closeConfirmAulaModal();
         return;
     }
     
-    const { aulaId, novoEstado } = AppState.aulaPendenteSwitch;
+    const { aulaId, idAulaValor, novoEstado } = AppState.aulaPendenteSwitch;
     
-    // Atualizar aula no estado
-    const aulaIndex = AppState.aulas.findIndex(a => a.id === aulaId);
-    if (aulaIndex !== -1) {
-        AppState.aulas[aulaIndex].check = novoEstado;
-        if (novoEstado) {
-            AppState.aulas[aulaIndex].status = 'concluida';
-        }
+    if (!idAulaValor) {
+        showNotification('Erro: ID da aula não encontrado', 'error');
+        closeConfirmAulaModal();
+        return;
     }
     
-    closeConfirmAulaModal();
-    loadAulas();
-    
-    if (novoEstado) {
-        showNotification('Aula marcada como concluída!', 'success');
-    } else {
-        showNotification('Aula desmarcada como concluída', 'info');
+    try {
+        // Buscar o documento que tem o campo "id-Aula" igual ao valor capturado
+        const firestore = firebase.firestore();
+        console.log('🔍 Buscando documento com id-Aula:', idAulaValor);
+        
+        const snapshot = await firestore.collection('BancoDeAulas-Lista')
+            .where('id-Aula', '==', idAulaValor)
+            .get();
+        
+        if (snapshot.empty) {
+            showNotification('Erro: Aula não encontrada no banco de dados', 'error');
+            closeConfirmAulaModal();
+            return;
+        }
+        
+        // Pegar o primeiro documento encontrado
+        const doc = snapshot.docs[0];
+        const docId = doc.id;
+        
+        console.log('🔄 Atualizando documento:', docId, 'com ConfirmacaoProfessorAula:', novoEstado);
+        
+        // Atualizar o campo ConfirmacaoProfessorAula
+        await firestore.collection('BancoDeAulas-Lista')
+            .doc(docId)
+            .update({
+                ConfirmacaoProfessorAula: novoEstado
+            });
+        
+        console.log('✅ Documento atualizado com sucesso');
+        
+        // Atualizar aula no estado local
+        const aulaIndex = AppState.aulas.findIndex(a => a.id === aulaId);
+        if (aulaIndex !== -1) {
+            AppState.aulas[aulaIndex].check = novoEstado;
+            if (novoEstado) {
+                AppState.aulas[aulaIndex].status = 'concluida';
+            }
+        }
+        
+        closeConfirmAulaModal();
+        loadAulas();
+        
+        if (novoEstado) {
+            showNotification('Aula marcada como concluída!', 'success');
+        } else {
+            showNotification('Aula desmarcada como concluída', 'info');
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar aula no Firestore:', error);
+        showNotification('Erro ao atualizar aula. Tente novamente.', 'error');
+        closeConfirmAulaModal();
     }
 }
 
