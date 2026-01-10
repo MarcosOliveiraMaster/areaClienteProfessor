@@ -51,8 +51,11 @@
                         <h2 id="professorNome">Bem vindo, Professor(a)</h2>
                         <p class="last-access">Último acesso: <span id="lastAccess">Hoje às 10:30</span></p>
                     </div>
-                    <div class="welcome-avatar">
-                        <i class="fas fa-user-circle"></i>
+                    <div class="welcome-actions">
+                        <button class="btn-cracha" id="crachaVirtualBtn">
+                            <i class="fas fa-id-badge"></i>
+                            <span>Crachá Virtual</span>
+                        </button>
                     </div>
                 </div>
                 
@@ -83,9 +86,34 @@
         <section class="aulas-section">
             <div class="section-header">
                 <h2>Lista de Aulas</h2>
-                <div class="date-filter">
-                    <i class="fas fa-calendar"></i>
-                    <input type="date" id="dateFilter" class="date-input">
+                <div class="filters-container">
+                    <div class="month-filter">
+                        <button class="btn-filter" id="monthFilterBtn">
+                            <i class="fas fa-filter"></i>
+                            <span>Filtro de Busca</span>
+                        </button>
+                        <div class="month-dropdown hidden" id="monthDropdown">
+                            <div class="month-option" data-month="0">Janeiro</div>
+                            <div class="month-option" data-month="1">Fevereiro</div>
+                            <div class="month-option" data-month="2">Março</div>
+                            <div class="month-option" data-month="3">Abril</div>
+                            <div class="month-option" data-month="4">Maio</div>
+                            <div class="month-option" data-month="5">Junho</div>
+                            <div class="month-option" data-month="6">Julho</div>
+                            <div class="month-option" data-month="7">Agosto</div>
+                            <div class="month-option" data-month="8">Setembro</div>
+                            <div class="month-option" data-month="9">Outubro</div>
+                            <div class="month-option" data-month="10">Novembro</div>
+                            <div class="month-option" data-month="11">Dezembro</div>
+                        </div>
+                    </div>
+                    <div class="date-filter">
+                        <i class="fas fa-calendar"></i>
+                        <input type="date" id="dateFilter" class="date-input">
+                        <button class="clear-date-btn hidden" id="clearDateBtn" title="Limpar filtro">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -93,7 +121,7 @@
             <div class="tabs-container">
                 <div class="tabs">
                     <button class="tab active" data-tab="todas">Todas as Aulas</button>
-                    <button class="tab" data-tab="hoje">Aulas de Hoje</button>
+                    <button class="tab" data-tab="hoje">Lista de Assuntos</button>
                 </div>
                 
                 <div class="tab-content active" id="todas">
@@ -185,6 +213,63 @@
             <div class="modal-footer">
                 <button class="btn-secondary modal-cancel">Cancelar</button>
                 <button class="btn-primary modal-save">Salvar Relatório</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Visualização do Relatório -->
+    <div id="relatorioViewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-comment" style="margin-right: 10px;"></i>Relatório da Aula</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label><strong>Descrição da Aula</strong></label>
+                    <textarea id="viewDescricao" rows="4" readonly style="background-color: #f8f9fa; cursor: default;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label><strong>Comportamento do estudante</strong></label>
+                    <textarea id="viewComportamento" rows="3" readonly style="background-color: #f8f9fa; cursor: default;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label><strong>Recomendações</strong></label>
+                    <textarea id="viewRecomendacoes" rows="3" readonly style="background-color: #f8f9fa; cursor: default;"></textarea>
+                </div>
+                <div class="form-group" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                    <small style="color: #6c757d;"><i class="fas fa-clock"></i> Enviado em: <span id="viewDataEnvio">-</span></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btnFecharView">Fechar</button>
+                <button class="btn-primary" id="btnEditarView"><i class="fas fa-edit"></i> Editar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição do Relatório -->
+    <div id="relatorioEditModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit" style="margin-right: 10px;"></i>Editar Relatório da Aula</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editDescricao"><strong>Descrição da Aula</strong></label>
+                    <textarea id="editDescricao" rows="4" placeholder="Em um parágrafo curto, faça um breve Resumo da aula"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editComportamento"><strong>Comportamento do estudante</strong></label>
+                    <textarea id="editComportamento" rows="3" placeholder="Comente sobre Comportamento e participação do estudante"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editRecomendacoes"><strong>Recomendações</strong></label>
+                    <textarea id="editRecomendacoes" rows="3" placeholder="Quais Recomendações para os pais para as próximas aulas?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btnCancelarEdit">Cancelar</button>
+                <button class="btn-primary" id="btnEnviarRelatorio"><i class="fas fa-paper-plane"></i> Enviar Relatório</button>
             </div>
         </div>
     </div>

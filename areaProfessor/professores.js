@@ -28,7 +28,8 @@ const AppState = {
     aulas: [...dataBaseAulas],
     aulaSelecionada: null,
     aulaPendenteSwitch: null,
-    filtroData: null
+    filtroData: null,
+    filtroMes: null // {mes: 0-11, ano: 2026}
 };
 
 // ===== ELEMENTOS DOM =====
@@ -48,6 +49,12 @@ const DOM = {
     
     // Filtros
     dateFilter: document.getElementById('dateFilter'),
+    clearDateBtn: document.getElementById('clearDateBtn'),
+    monthFilterBtn: document.getElementById('monthFilterBtn'),
+    monthDropdown: document.getElementById('monthDropdown'),
+    
+    // Botões
+    crachaVirtualBtn: document.getElementById('crachaVirtualBtn'),
     
     // Botões
     logoutBtn: document.getElementById('logoutBtn'),
@@ -60,13 +67,32 @@ const DOM = {
     confirmAulaYes: document.getElementById('confirmAulaYes'),
     confirmAulaNo: document.getElementById('confirmAulaNo'),
     
-    // Modal de Relatório
+    // Modal de Relatório Antigo (remover depois)
     relatorioModal: document.getElementById('relatorioModal'),
     modalClose: document.querySelector('.modal-close'),
     modalCancel: document.querySelector('.modal-cancel'),
     modalSave: document.querySelector('.modal-save'),
     relatorioConteudo: document.getElementById('relatorioConteudo'),
-    relatorioObservacoes: document.getElementById('relatorioObservacoes')
+    relatorioObservacoes: document.getElementById('relatorioObservacoes'),
+    
+    // Novos Modais de Relatório
+    relatorioViewModal: document.getElementById('relatorioViewModal'),
+    relatorioEditModal: document.getElementById('relatorioEditModal'),
+    
+    // Elementos do modal de visualização
+    viewDescricao: document.getElementById('viewDescricao'),
+    viewComportamento: document.getElementById('viewComportamento'),
+    viewRecomendacoes: document.getElementById('viewRecomendacoes'),
+    viewDataEnvio: document.getElementById('viewDataEnvio'),
+    btnFecharView: document.getElementById('btnFecharView'),
+    btnEditarView: document.getElementById('btnEditarView'),
+    
+    // Elementos do modal de edição
+    editDescricao: document.getElementById('editDescricao'),
+    editComportamento: document.getElementById('editComportamento'),
+    editRecomendacoes: document.getElementById('editRecomendacoes'),
+    btnCancelarEdit: document.getElementById('btnCancelarEdit'),
+    btnEnviarRelatorio: document.getElementById('btnEnviarRelatorio')
 };
 
 // ===== INICIALIZAÇÃO =====
@@ -142,6 +168,121 @@ function loadProfessorData(professorData) {
     }
 }
 
+// ===== CALCULAR VALOR DO MÊS ATUAL =====
+function calcularValorMesAtual() {
+    try {
+        // Obter primeiro e último dia do mês atual
+        const hoje = new Date();
+        const mesAtual = hoje.getMonth(); // 0-11
+        const anoAtual = hoje.getFullYear();
+        
+        const primeiroDia = new Date(anoAtual, mesAtual, 1);
+        const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+        
+        console.log('📅 Calculando valor do mês:', `${mesAtual + 1}/${anoAtual}`);
+        console.log('📅 Período:', primeiroDia.toLocaleDateString('pt-BR'), 'até', ultimoDia.toLocaleDateString('pt-BR'));
+        
+        let valorTotal = 0;
+        let aulasContadas = 0;
+        
+        // Percorrer todas as aulas
+        AppState.aulas.forEach(aula => {
+            if (!aula.data) return;
+            
+            // Extrair data do formato "ddd - dd/mm/yyyy"
+            const partesData = aula.data.split(' - ');
+            if (partesData.length < 2) return;
+            
+            const dataStr = partesData[1]; // dd/mm/yyyy
+            const [dia, mes, ano] = dataStr.split('/').map(Number);
+            
+            // Criar objeto Date para a aula
+            const dataAula = new Date(ano, mes - 1, dia);
+            
+            // Verificar se a aula está dentro do mês atual
+            if (dataAula >= primeiroDia && dataAula <= ultimoDia) {
+                // Verificar se existe o campo ValorAula e somar
+                const valorAula = aula.ValorAula || 0;
+                valorTotal += valorAula;
+                aulasContadas++;
+                
+                console.log(`  ✓ Aula ${aula.data}: R$ ${valorAula.toFixed(2)}`);
+            }
+        });
+        
+        console.log(`💰 Total de aulas no mês: ${aulasContadas}`);
+        console.log(`💰 Valor total do mês: R$ ${valorTotal.toFixed(2)}`);
+        
+        // Atualizar o valor na tela
+        DOM.monthValue.textContent = formatCurrency(valorTotal);
+        
+        return valorTotal;
+        
+    } catch (error) {
+        console.error('❌ Erro ao calcular valor do mês:', error);
+        return 0;
+    }
+}
+
+// ===== CALCULAR VALOR DA CARTEIRA (AULAS CONCLUÍDAS DO MÊS) =====
+function calcularValorCarteira() {
+    try {
+        // Obter primeiro e último dia do mês atual
+        const hoje = new Date();
+        const mesAtual = hoje.getMonth(); // 0-11
+        const anoAtual = hoje.getFullYear();
+        
+        const primeiroDia = new Date(anoAtual, mesAtual, 1);
+        const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+        
+        console.log('💳 Calculando valor da carteira (aulas concluídas):', `${mesAtual + 1}/${anoAtual}`);
+        
+        let valorTotal = 0;
+        let aulasConcluidas = 0;
+        
+        // Percorrer todas as aulas
+        AppState.aulas.forEach(aula => {
+            if (!aula.data) return;
+            
+            // Extrair data do formato "ddd - dd/mm/yyyy"
+            const partesData = aula.data.split(' - ');
+            if (partesData.length < 2) return;
+            
+            const dataStr = partesData[1]; // dd/mm/yyyy
+            const [dia, mes, ano] = dataStr.split('/').map(Number);
+            
+            // Criar objeto Date para a aula
+            const dataAula = new Date(ano, mes - 1, dia);
+            
+            // Verificar se a aula está dentro do mês atual E se está concluída
+            if (dataAula >= primeiroDia && dataAula <= ultimoDia) {
+                const statusAula = aula.statusAula || '';
+                
+                // Verificar se o status é "Aula Concluída"
+                if (statusAula === 'Aula Concluída') {
+                    const valorAula = aula.ValorAula || 0;
+                    valorTotal += valorAula;
+                    aulasConcluidas++;
+                    
+                    console.log(`  ✓ Aula concluída ${aula.data}: R$ ${valorAula.toFixed(2)}`);
+                }
+            }
+        });
+        
+        console.log(`💳 Total de aulas concluídas: ${aulasConcluidas}`);
+        console.log(`💳 Valor da carteira: R$ ${valorTotal.toFixed(2)}`);
+        
+        // Atualizar o valor na tela
+        DOM.walletValue.textContent = formatCurrency(valorTotal);
+        
+        return valorTotal;
+        
+    } catch (error) {
+        console.error('❌ Erro ao calcular valor da carteira:', error);
+        return 0;
+    }
+}
+
 // ===== BUSCAR AULAS DO PROFESSOR NO FIRESTORE =====
 async function buscarAulasProfessor(idProfessor_CPF) {
     try {
@@ -207,7 +348,9 @@ async function buscarAulasProfessor(idProfessor_CPF) {
                 duracao: data.duracao || '',
                 statusAula: data.StatusAula || '',
                 check: data.ConfirmacaoProfessorAula === true || data.ConfirmacaoProfessorAula === 'true',
-                relatorio: false // Deixar em branco por enquanto
+                relatorio: false, // Deixar em branco por enquanto
+                ValorAula: data.ValorAula || 0, // Valor da aula
+                RelatorioAula: data.RelatorioAula || '' // Relatório da aula
             });
         });
         
@@ -219,6 +362,12 @@ async function buscarAulasProfessor(idProfessor_CPF) {
         
         // Recarregar a tabela com os novos dados
         loadAulas();
+        
+        // Calcular e atualizar o valor do mês atual
+        calcularValorMesAtual();
+        
+        // Calcular e atualizar o valor da carteira (aulas concluídas)
+        calcularValorCarteira();
         
     } catch (error) {
         console.error('❌ Erro ao buscar aulas do professor:', error);
@@ -238,9 +387,40 @@ function setupEventListeners() {
     // Filtro de data
     DOM.dateFilter.addEventListener('change', function() {
         const dataSelecionada = this.value;
-        AppState.filtroData = dataSelecionada ? formatDateToBR(dataSelecionada) : null;
+        if (dataSelecionada) {
+            // Converter data do input (yyyy-mm-dd) para formato BR (dd/mm/yyyy)
+            const [ano, mes, dia] = dataSelecionada.split('-');
+            AppState.filtroData = `${dia}/${mes}/${ano}`;
+            
+            // Mostrar botão de limpar
+            if (DOM.clearDateBtn) DOM.clearDateBtn.classList.remove('hidden');
+        } else {
+            AppState.filtroData = null;
+            
+            // Esconder botão de limpar
+            if (DOM.clearDateBtn) DOM.clearDateBtn.classList.add('hidden');
+        }
         loadAulas();
     });
+    
+    // Botão de limpar filtro de data
+    if (DOM.clearDateBtn) {
+        DOM.clearDateBtn.addEventListener('click', function() {
+            DOM.dateFilter.value = '';
+            AppState.filtroData = null;
+            AppState.filtroMes = null;
+            this.classList.add('hidden');
+            
+            // Remover seleção ativa dos meses
+            if (DOM.monthDropdown) {
+                DOM.monthDropdown.querySelectorAll('.month-option').forEach(opt => {
+                    opt.classList.remove('active');
+                });
+            }
+            
+            loadAulas();
+        });
+    }
     
     // Logout
     DOM.logoutBtn.addEventListener('click', function(e) {
@@ -264,10 +444,71 @@ function setupEventListeners() {
         showIndicacao();
     });
     
-    // Modal
+    // Botão Crachá Virtual
+    if (DOM.crachaVirtualBtn) {
+        DOM.crachaVirtualBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Funcionalidade será implementada futuramente
+            showNotification('Funcionalidade em desenvolvimento', 'info');
+        });
+    }
+    
+    // Filtro de Mês
+    if (DOM.monthFilterBtn) {
+        DOM.monthFilterBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            DOM.monthDropdown.classList.toggle('hidden');
+        });
+    }
+    
+    // Opções do dropdown de mês
+    if (DOM.monthDropdown) {
+        const monthOptions = DOM.monthDropdown.querySelectorAll('.month-option');
+        monthOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const mesIndex = parseInt(this.dataset.month);
+                const anoAtual = new Date().getFullYear();
+                
+                // Definir filtro de mês
+                AppState.filtroMes = { mes: mesIndex, ano: anoAtual };
+                
+                // Limpar filtro de data
+                DOM.dateFilter.value = '';
+                AppState.filtroData = null;
+                if (DOM.clearDateBtn) DOM.clearDateBtn.classList.add('hidden');
+                
+                // Marcar opção ativa
+                monthOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Fechar dropdown
+                DOM.monthDropdown.classList.add('hidden');
+                
+                // Recarregar aulas
+                loadAulas();
+            });
+        });
+    }
+    
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', function(e) {
+        if (DOM.monthDropdown && !DOM.monthDropdown.classList.contains('hidden')) {
+            if (!e.target.closest('.month-filter')) {
+                DOM.monthDropdown.classList.add('hidden');
+            }
+        }
+    });
+    
+    // Modal antigo (manter por compatibilidade)
     DOM.modalClose.addEventListener('click', closeModal);
     DOM.modalCancel.addEventListener('click', closeModal);
     DOM.modalSave.addEventListener('click', saveRelatorio);
+    
+    // Novos modais de relatório
+    if (DOM.btnFecharView) DOM.btnFecharView.addEventListener('click', closeRelatorioViewModal);
+    if (DOM.btnEditarView) DOM.btnEditarView.addEventListener('click', openRelatorioEditModalFromView);
+    if (DOM.btnCancelarEdit) DOM.btnCancelarEdit.addEventListener('click', closeRelatorioEditModal);
+    if (DOM.btnEnviarRelatorio) DOM.btnEnviarRelatorio.addEventListener('click', salvarRelatorioAula);
     
     // Modal de Confirmação de Aula
     DOM.confirmAulaYes.addEventListener('click', confirmAulaConcluida);
@@ -280,6 +521,12 @@ function setupEventListeners() {
         }
         if (e.target === DOM.confirmAulaModal) {
             closeConfirmAulaModal();
+        }
+        if (e.target === DOM.relatorioViewModal) {
+            closeRelatorioViewModal();
+        }
+        if (e.target === DOM.relatorioEditModal) {
+            closeRelatorioEditModal();
         }
     });
 }
@@ -311,9 +558,44 @@ function loadAulas() {
     const tabAtiva = document.querySelector('.tab.active').dataset.tab;
     let aulasFiltradas = [...AppState.aulas];
     
-    // Aplicar filtro de data se existir
+    // Aplicar filtro de data específica (tem prioridade)
     if (AppState.filtroData) {
-        aulasFiltradas = aulasFiltradas.filter(aula => aula.data === AppState.filtroData);
+        aulasFiltradas = aulasFiltradas.filter(aula => {
+            if (!aula.data) return false;
+            const partesData = aula.data.includes(' - ') ? aula.data.split(' - ')[1] : aula.data;
+            return partesData === AppState.filtroData;
+        });
+    }
+    // Aplicar filtro de mês selecionado
+    else if (AppState.filtroMes) {
+        const { mes, ano } = AppState.filtroMes;
+        const primeiroDia = new Date(ano, mes, 1);
+        const ultimoDia = new Date(ano, mes + 1, 0);
+        
+        aulasFiltradas = aulasFiltradas.filter(aula => {
+            if (!aula.data) return false;
+            
+            const partesData = aula.data.includes(' - ') ? aula.data.split(' - ')[1] : aula.data;
+            const [dia, mesStr, anoStr] = partesData.split('/');
+            const dataAula = new Date(parseInt(anoStr), parseInt(mesStr) - 1, parseInt(dia));
+            
+            return dataAula >= primeiroDia && dataAula <= ultimoDia;
+        });
+    }
+    // Filtro padrão para tab "Todas as Aulas" (sem filtro manual)
+    else if (tabAtiva === 'todas') {
+        const hoje = new Date();
+        const primeiroDiaMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        
+        aulasFiltradas = aulasFiltradas.filter(aula => {
+            if (!aula.data) return false;
+            
+            const partesData = aula.data.includes(' - ') ? aula.data.split(' - ')[1] : aula.data;
+            const [dia, mes, ano] = partesData.split('/');
+            const dataAula = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+            
+            return dataAula >= primeiroDiaMesAtual;
+        });
     }
     
     // Aplicar filtro da tab
@@ -342,18 +624,22 @@ function loadAulas() {
             break;
     }
     
-    // Ordenar por data e hora
+    // Ordenar por data e hora (ordem crescente - mais antiga primeiro)
     aulasFiltradas.sort((a, b) => {
-        const [diaA, mesA, anoA] = a.data.split('/');
-        const [diaB, mesB, anoB] = b.data.split('/');
+        // Extrair data do formato "ddd - dd/mm/yyyy"
+        const partesDataA = a.data.includes(' - ') ? a.data.split(' - ')[1] : a.data;
+        const partesDataB = b.data.includes(' - ') ? b.data.split(' - ')[1] : b.data;
+        
+        const [diaA, mesA, anoA] = partesDataA.split('/');
+        const [diaB, mesB, anoB] = partesDataB.split('/');
         const dataA = new Date(anoA, mesA - 1, diaA);
         const dataB = new Date(anoB, mesB - 1, diaB);
         
         if (dataA.getTime() !== dataB.getTime()) {
-            return dataA - dataB;
+            return dataA - dataB; // Ordem crescente
         }
         
-        return a.hora.localeCompare(b.hora);
+        return a.hora.localeCompare(b.hora); // Hora também em ordem crescente
     });
     
     // Renderizar tabela
@@ -381,9 +667,9 @@ function renderAulasTable(aulas) {
     aulas.forEach(aula => {
         const tr = document.createElement('tr');
         
-        // Botões de ação
-        const reportBtnText = aula.relatorio ? 'Ver' : 'Confirmar';
-        const reportBtnClass = aula.relatorio ? 'btn-report' : 'btn-report';
+        // Verificar se existe relatório
+        const temRelatorio = aula.RelatorioAula && aula.RelatorioAula.trim() !== '';
+        const iconColor = temRelatorio ? '#28a745' : '#6c757d'; // Verde se tem, cinza se não tem
         
         // Exibir apenas primeiro e segundo nome do cliente
         const nomeClienteAbreviado = aula.nomeCliente 
@@ -418,9 +704,8 @@ function renderAulasTable(aulas) {
                 </label>
             </td>
             <td>
-                <button class="btn-action ${reportBtnClass}" data-id="${aula.id}" data-action="report">
-                    <i class="fas ${aula.relatorio ? 'fa-file-alt' : 'fa-plus-circle'}"></i>
-                    ${reportBtnText}
+                <button class="btn-action btn-report" data-id="${aula.id}" data-action="report" style="background: transparent; border: none; cursor: pointer; font-size: 1.5rem;">
+                    <i class="fas fa-comment" style="color: ${iconColor};"></i>
                 </button>
             </td>
         `;
@@ -442,9 +727,6 @@ function addTableEventListeners() {
             const idAulaValor = this.dataset.idAula;
             const novoEstado = this.checked;
             
-            console.log('🔍 Switch clicado - id-Aula:', idAulaValor);
-            console.log('📋 aulaId (docId):', aulaId);
-            
             // Reverter o estado do checkbox temporariamente
             this.checked = !novoEstado;
             
@@ -459,8 +741,8 @@ function addTableEventListeners() {
     // Botão de relatório
     document.querySelectorAll('[data-action="report"]').forEach(btn => {
         btn.addEventListener('click', function() {
-            const aulaId = parseInt(this.dataset.id);
-            openRelatorioModal(aulaId);
+            const aulaId = this.dataset.id;
+            openRelatorioViewModal(aulaId);
         });
     });
 }
@@ -556,7 +838,6 @@ async function confirmAulaConcluida() {
     try {
         // Buscar o documento que tem o campo "id-Aula" igual ao valor capturado
         const firestore = firebase.firestore();
-        console.log('🔍 Buscando documento com id-Aula:', idAulaValor);
         
         const snapshot = await firestore.collection('BancoDeAulas-Lista')
             .where('id-Aula', '==', idAulaValor)
@@ -572,16 +853,12 @@ async function confirmAulaConcluida() {
         const doc = snapshot.docs[0];
         const docId = doc.id;
         
-        console.log('🔄 Atualizando documento:', docId, 'com ConfirmacaoProfessorAula:', novoEstado);
-        
         // Atualizar o campo ConfirmacaoProfessorAula
         await firestore.collection('BancoDeAulas-Lista')
             .doc(docId)
             .update({
                 ConfirmacaoProfessorAula: novoEstado
             });
-        
-        console.log('✅ Documento atualizado com sucesso');
         
         // Atualizar aula no estado local
         const aulaIndex = AppState.aulas.findIndex(a => a.id === aulaId);
@@ -735,6 +1012,192 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ===== FUNÇÕES DO NOVO MODAL DE RELATÓRIO =====
+
+// Abrir modal de visualização do relatório
+function openRelatorioViewModal(aulaId) {
+    const aula = AppState.aulas.find(a => a.id === aulaId);
+    if (!aula) return;
+    
+    AppState.aulaSelecionada = aula;
+    
+    // Parse do relatório (formato string com quebras de linha)
+    const relatorio = aula.RelatorioAula || '';
+    
+    if (relatorio.trim() === '') {
+        // Se não tem relatório, ir direto para edição
+        openRelatorioEditModal(aulaId);
+        return;
+    }
+    
+    // Extrair informações do relatório
+    const linhas = relatorio.split('\n');
+    let descricao = '';
+    let comportamento = '';
+    let recomendacoes = '';
+    let dataEnvio = '';
+    
+    let secaoAtual = '';
+    
+    linhas.forEach(linha => {
+        if (linha.includes('Descrição da Aula')) {
+            secaoAtual = 'descricao';
+        } else if (linha.includes('Comportamento do estudante')) {
+            secaoAtual = 'comportamento';
+        } else if (linha.includes('Recomendações')) {
+            secaoAtual = 'recomendacoes';
+        } else if (linha.includes('Enviado em:')) {
+            dataEnvio = linha.replace('Enviado em:', '').trim();
+            secaoAtual = '';
+        } else if (linha.trim() !== '' && !linha.includes('---')) {
+            if (secaoAtual === 'descricao') descricao += linha + '\n';
+            if (secaoAtual === 'comportamento') comportamento += linha + '\n';
+            if (secaoAtual === 'recomendacoes') recomendacoes += linha + '\n';
+        }
+    });
+    
+    // Preencher campos do modal
+    if (DOM.viewDescricao) DOM.viewDescricao.value = descricao.trim();
+    if (DOM.viewComportamento) DOM.viewComportamento.value = comportamento.trim();
+    if (DOM.viewRecomendacoes) DOM.viewRecomendacoes.value = recomendacoes.trim();
+    if (DOM.viewDataEnvio) DOM.viewDataEnvio.textContent = dataEnvio || 'Não informado';
+    
+    // Mostrar modal
+    if (DOM.relatorioViewModal) DOM.relatorioViewModal.classList.add('show');
+}
+
+// Fechar modal de visualização
+function closeRelatorioViewModal() {
+    if (DOM.relatorioViewModal) DOM.relatorioViewModal.classList.remove('show');
+    AppState.aulaSelecionada = null;
+}
+
+// Abrir modal de edição a partir do modal de visualização
+function openRelatorioEditModalFromView() {
+    closeRelatorioViewModal();
+    
+    if (!AppState.aulaSelecionada) return;
+    
+    openRelatorioEditModal(AppState.aulaSelecionada.id);
+}
+
+// Abrir modal de edição do relatório
+function openRelatorioEditModal(aulaId) {
+    const aula = AppState.aulas.find(a => a.id === aulaId);
+    if (!aula) return;
+    
+    AppState.aulaSelecionada = aula;
+    
+    // Parse do relatório existente (se houver)
+    const relatorio = aula.RelatorioAula || '';
+    
+    let descricao = '';
+    let comportamento = '';
+    let recomendacoes = '';
+    
+    if (relatorio.trim() !== '') {
+        const linhas = relatorio.split('\n');
+        let secaoAtual = '';
+        
+        linhas.forEach(linha => {
+            if (linha.includes('Descrição da Aula')) {
+                secaoAtual = 'descricao';
+            } else if (linha.includes('Comportamento do estudante')) {
+                secaoAtual = 'comportamento';
+            } else if (linha.includes('Recomendações')) {
+                secaoAtual = 'recomendacoes';
+            } else if (linha.includes('Enviado em:')) {
+                secaoAtual = '';
+            } else if (linha.trim() !== '' && !linha.includes('---')) {
+                if (secaoAtual === 'descricao') descricao += linha + '\n';
+                if (secaoAtual === 'comportamento') comportamento += linha + '\n';
+                if (secaoAtual === 'recomendacoes') recomendacoes += linha + '\n';
+            }
+        });
+    }
+    
+    // Preencher campos do modal
+    if (DOM.editDescricao) DOM.editDescricao.value = descricao.trim();
+    if (DOM.editComportamento) DOM.editComportamento.value = comportamento.trim();
+    if (DOM.editRecomendacoes) DOM.editRecomendacoes.value = recomendacoes.trim();
+    
+    // Mostrar modal
+    if (DOM.relatorioEditModal) DOM.relatorioEditModal.classList.add('show');
+}
+
+// Fechar modal de edição
+function closeRelatorioEditModal() {
+    if (DOM.relatorioEditModal) DOM.relatorioEditModal.classList.remove('show');
+    AppState.aulaSelecionada = null;
+}
+
+// Salvar relatório da aula
+async function salvarRelatorioAula() {
+    if (!AppState.aulaSelecionada) return;
+    
+    // Obter valores dos campos
+    const descricao = DOM.editDescricao ? DOM.editDescricao.value.trim() : '';
+    const comportamento = DOM.editComportamento ? DOM.editComportamento.value.trim() : '';
+    const recomendacoes = DOM.editRecomendacoes ? DOM.editRecomendacoes.value.trim() : '';
+    
+    // Validação: todos campos devem ter pelo menos 1 caractere
+    if (descricao === '' || comportamento === '' || recomendacoes === '') {
+        showNotification('Todos os campos devem ser preenchidos!', 'error');
+        return;
+    }
+    
+    // Obter data e hora atual
+    const agora = new Date();
+    const diasSemana = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+    const diaSemana = diasSemana[agora.getDay()];
+    const dia = agora.getDate().toString().padStart(2, '0');
+    const mes = (agora.getMonth() + 1).toString().padStart(2, '0');
+    const ano = agora.getFullYear();
+    const horas = agora.getHours().toString().padStart(2, '0');
+    const minutos = agora.getMinutes().toString().padStart(2, '0');
+    
+    const dataEnvio = `${diaSemana} - ${dia}/${mes}/${ano} às ${horas}:${minutos}`;
+    
+    // Criar string do relatório com quebras de linha
+    const relatorioTexto = `Descrição da Aula\n${descricao}\n\n---\n\nComportamento do estudante\n${comportamento}\n\n---\n\nRecomendações\n${recomendacoes}\n\n---\n\nEnviado em: ${dataEnvio}`;
+    
+    try {
+        // Atualizar no Firestore
+        const firestore = firebase.firestore();
+        
+        await firestore.collection('BancoDeAulas-Lista')
+            .doc(AppState.aulaSelecionada.id)
+            .update({
+                RelatorioAula: relatorioTexto
+            });
+        
+        // Atualizar no estado local
+        const aulaIndex = AppState.aulas.findIndex(a => a.id === AppState.aulaSelecionada.id);
+        if (aulaIndex !== -1) {
+            AppState.aulas[aulaIndex].RelatorioAula = relatorioTexto;
+        }
+        
+        // Recarregar tabela
+        loadAulas();
+        
+        // Recalcular valores
+        calcularValorMesAtual();
+        calcularValorCarteira();
+        
+        // Fechar modal
+        closeRelatorioEditModal();
+        
+        // Mostrar notificação de sucesso
+        showNotification('Relatório salvo com sucesso!', 'success');
+        
+        console.log('✅ Relatório salvo:', relatorioTexto);
+        
+    } catch (error) {
+        console.error('❌ Erro ao salvar relatório:', error);
+        showNotification('Erro ao salvar relatório. Tente novamente.', 'error');
+    }
+}
 
 // ===== EXPORT PARA DEBUG =====
 window.ProfessoresApp = {
