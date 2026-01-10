@@ -55,6 +55,7 @@ const DOM = {
     
     // Botões
     crachaVirtualBtn: document.getElementById('crachaVirtualBtn'),
+    estatisticasBtn: document.getElementById('estatisticasBtn'),
     
     // Botões
     logoutBtn: document.getElementById('logoutBtn'),
@@ -447,6 +448,15 @@ function setupEventListeners() {
     // Botão Crachá Virtual
     if (DOM.crachaVirtualBtn) {
         DOM.crachaVirtualBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Funcionalidade será implementada futuramente
+            showNotification('Funcionalidade em desenvolvimento', 'info');
+        });
+    }
+    
+    // Botão Estatísticas
+    if (DOM.estatisticasBtn) {
+        DOM.estatisticasBtn.addEventListener('click', function(e) {
             e.preventDefault();
             // Funcionalidade será implementada futuramente
             showNotification('Funcionalidade em desenvolvimento', 'info');
