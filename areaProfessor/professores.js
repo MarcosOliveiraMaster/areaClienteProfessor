@@ -942,7 +942,8 @@ function showIndicacao() {
 function logout() {
     if (confirm('Deseja realmente sair do sistema?')) {
         localStorage.removeItem('professorLogado');
-        window.location.href = 'index.html';
+        localStorage.removeItem('idProfessor_CPF');
+        window.location.href = '../index.html';
     }
 }
 
