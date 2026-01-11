@@ -259,8 +259,8 @@ function calcularValorCarteira() {
             if (dataAula >= primeiroDia && dataAula <= ultimoDia) {
                 const statusAula = aula.statusAula || '';
                 
-                // Verificar se o status é "Aula Concluída"
-                if (statusAula === 'Aula Concluída') {
+                // Verificar se o status é "Concluída"
+                if (statusAula === 'Concluída') {
                     const valorAula = aula.ValorAula || 0;
                     valorTotal += valorAula;
                     aulasConcluidas++;
@@ -343,6 +343,7 @@ async function buscarAulasProfessor(idProfessor_CPF) {
                 id: docId,
                 idAula: data['id-Aula'] || '',
                 data: data.data || '',
+                materia: data.materia || '',
                 nomeCliente: data.nomeCliente || data.cliente || '',
                 aluno: data.estudante || '',
                 hora: data.horario || '',
@@ -701,6 +702,7 @@ function renderAulasTable(aulas) {
         
         tr.innerHTML = `
             <td>${aula.data || '-'}</td>
+            <td>${aula.materia || '-'}</td>
             <td><strong>${nomeClienteAbreviado}</strong></td>
             <td>${aula.aluno || '-'}</td>
             <td>${aula.hora || '-'}</td>
