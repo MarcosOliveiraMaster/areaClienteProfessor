@@ -15,6 +15,12 @@ const professores = [
         dataSemBarras: "08032006"
     },
     {
+        nome: "Letícia de Pontes Leite Monte",
+        cpf: "82900370582",
+        dataNascimento: "31/10/1997",
+        dataSemBarras: "31101997"
+    },
+    {
         nome: "Pâmela Abigail da Silva Melo",
         cpf: "09049132448", // Corrigido para 11 dígitos
         dataNascimento: "24/11/2000",
